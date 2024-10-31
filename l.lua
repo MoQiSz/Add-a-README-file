@@ -1,3 +1,39 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
@@ -5,6 +41,7 @@ end
 if game.CreatorId ~= 17219742 or not getgenv or not getgenv or not getupvalues or not require or not assert or not setmetatable or not loadstring or not isfile or not readfile or not delfile or not writefile or not isfolder or not delfolder or not listfiles or not makefolder or not firesignal or (getgenv and (getgenv().LoadedFluentCrazyDay or getgenv().RunedWating)) or (identifyexecutor and identifyexecutor():find("Fluxus")) then
     return
 else
+    print("[Loading] - Anime Vanguards")
     getgenv().RunedWating = ""
 end
 
@@ -3289,6 +3326,15 @@ else
                                         {
                                             Title = "Notification",
                                             SubContent = "Unit already on this place",
+                                            Disable = true,
+                                            Duration = 5
+                                        }
+                                    )
+                                elseif #Fluent.Database.Vanguards._CurrentPlaceUnit(n["Unit"]).Placed >= Fluent.Database.Vanguards._CurrentPlaceUnit(n["Unit"]).MaxPlace then
+                                    Fluent:Notify(
+                                        {
+                                            Title = "Notification",
+                                            SubContent = "Unit already on max place",
                                             Disable = true,
                                             Duration = 5
                                         }
