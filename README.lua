@@ -1,1 +1,1 @@
-xw
+return "CrazyDay.lua"
