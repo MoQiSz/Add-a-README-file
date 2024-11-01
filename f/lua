@@ -1,0 +1,128 @@
+getgenv().Configs =
+{
+    ["Target Portals"] = {"Abandoned Cathedral (Winter)"},
+    ["Target Tier"] = {"5", "4", "3", "2", "1"},
+
+    ["Ignore Challenge"] = {"Barebones"},
+    ["Ignore Map"] = {},
+    ["Ignore Act"] = {},
+
+    ["Start Time Delay"] = 0.25
+}
+
+
+repeat wait() until game:IsLoaded() and ((game.PlaceId == 12886143095 or game.PlaceId == 18583778121) or (game.PlaceId ~= 12886143095 and game.PlaceId ~= 18583778121 and game:GetService("Workspace"):FindFirstChild("Map")))
+local function Notify(Text)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Notifaction",
+        Text = Text,
+        Duration = 9e9,
+        Button1 = "Close"
+    })
+end
+local function NavigationGUIEnabled(Value)
+    local GuiService = game:GetService("GuiService")
+    GuiService.GuiNavigationEnabled = Value
+
+    if Value == false then
+        GuiService.SelectedObject = nil
+    end
+end
+local function NavigationGUISelect(Object)
+    local GuiService = game:GetService("GuiService")
+    GuiService.SelectedObject = Object or nil
+    if Object then
+        game:GetService("VirtualInputManager"):SendKeyEvent(true, "Return", false, nil)
+        game:GetService("VirtualInputManager"):SendKeyEvent(false, "Return", false, nil)
+    end
+end
+local function Portals()
+    local Portal_Collage, Configs = {}, getgenv().Configs
+    for _ , Indx in next, game:GetService("Players").LocalPlayer.PlayerGui.Items.BG.Portals:GetChildren() do
+        if Indx:IsA("TextButton") and table.find(Configs["Target Portals"],Indx.PortalName.Text) and table.find(Configs["Target Tier"],Indx.PortalTier.Text:split("Tier ")[2]) then
+            table.insert(Portal_Collage, Indx)
+        end
+    end
+    table.sort(Portal_Collage, function(order, tier)
+        return order.LayoutOrder < tier.LayoutOrder
+    end)
+    return Portal_Collage
+end
+local bindable, STOP = Instance.new("BindableFunction"), false
+local function StopAutoPortal(txt)
+    if txt == "Stop" then
+        STOP = true
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Notifaction",
+            Text = "Auto Portal Just Stop . . .",
+            Duration = 2,
+        })
+    end
+end
+bindable.OnInvoke = StopAutoPortal
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "Notifaction",
+    Text = "Auto Portal Working . . .",
+    Duration = 9e9,
+    Callback = bindable,
+    Button1 = "Close",
+    Button2 = "Stop"
+})
+if game.PlaceId ~= 12886143095 and game.PlaceId ~= 18583778121 and not STOP then
+    repeat wait() until game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("EndGameUI") or STOP
+    if STOP then return end
+    repeat wait() until game:GetService("Players").LocalPlayer.PlayerGui.EndGameUI.BG.Buttons:FindFirstChild("Next") or STOP
+    if STOP then return end
+    repeat wait() until game:GetService("Players").LocalPlayer.PlayerGui.EndGameUI.BG.Buttons.Next.Styling.Label.Text == "View Portals" or STOP
+    if STOP then return end
+    NavigationGUIEnabled(true)
+    repeat
+        if STOP then NavigationGUIEnabled(false) return end
+        NavigationGUISelect(game:GetService("Players").LocalPlayer.PlayerGui.EndGameUI.BG.Buttons.Next)
+        wait(0.25)
+    until game:GetService("Players").LocalPlayer.PlayerGui.Items.Enabled or STOP
+    if STOP then return end
+    NavigationGUIEnabled(false)
+    Notify("Looking For The Portal . . .")
+    wait(2)
+    game:GetService("Players").LocalPlayer.PlayerGui.Items.Enabled = false
+end
+if STOP then return end
+repeat task.wait() until #Portals() > 0
+if #Portals() > 0 then
+    local Information , Configs, ItsPortal = game:GetService("Players").LocalPlayer.PlayerGui.Items.BG.Selection, getgenv().Configs, nil
+    for _ , Target in next, Portals() do
+        if ItsPortal or STOP then break
+        else
+            firesignal(Target.Activated)
+            task.wait(0.075)
+            if not table.find(Configs["Ignore Challenge"],Information.PortalContent.Challenge.Text) and not table.find(Configs["Ignore Map"],Information.PortalContent.Map.Text) then
+                if Information.PortalContent.Act.Text:match("Act") and not table.find(Configs["Ignore Act"],Information.PortalContent.Act.Text:split("Act ")[2]) then
+                    ItsPortal = Target
+                elseif Information.PortalContent.Act.Text:match("Tier") then
+                    ItsPortal = Target
+                    break
+                end
+            end
+        end
+    end
+    if ItsPortal then
+        if STOP then return end
+        Notify(Information.PortalContent.Map.Text.."/"..Information.PortalContent.Act.Text.."/"..Information.PortalContent.Challenge.Text)
+        game:GetService("ReplicatedStorage").Remotes.Portals.Activate:InvokeServer(ItsPortal.Name)
+        wait((Configs["Start Time Delay"] and type(Configs["Start Time Delay"]) == "number" and Configs["Start Time Delay"]) or 0.25)
+        repeat wait() until game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("PortalUI")
+        if STOP then return end
+        NavigationGUIEnabled(true)
+        NavigationGUISelect(game:GetService("Players").LocalPlayer.PlayerGui.PortalUI.BG.Bottom.Start)
+        task.wait(0.075)
+        NavigationGUIEnabled(false)
+        Notify("Started")
+    else
+        if STOP then return end
+    Notify("The Target Portals Does Not Exist")
+    end
+else
+    if STOP then return end
+    Notify("Portal Does Not Exist")
+end
