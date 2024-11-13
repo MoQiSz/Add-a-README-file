@@ -786,7 +786,7 @@ do
            getgenv().SlowLoad = 0
     end
 
-    if getgenv().SlowLoad >= 1 then
+    if getgenv().SlowLoad ~= 0 then
         task.spawn(
             Fluent.Script.AddSignal, nil,
             Windows.Root.DescendantAdded,
